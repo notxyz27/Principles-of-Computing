@@ -13,13 +13,31 @@ def make_complete_graph(num_nodes):
     Takes the number of nodes num_nodes and returns a dictionary
     corresponding to a complete directed gragh
     """
+    digragh = dict()
     
-    return []
+    if num_nodes > 0:
+            for num in range(num_nodes):
+                tem_list = range(num_nodes)
+                tem_list.remove(num)
+                tem_set = set(tem_list)
+                digragh.update({num: tem_set})
+                            
+    return digragh
 
 def compute_in_degrees(digraph):
     """
     Takes a directed graph digraph and computes the in degrees for
     the nodes in the graph
+    """
+    in_degree_dic = dict()
+     
+        
+    return []
+
+def in_degree_distribution(digragh):
+    """
+    Takes a directed graph digraph and computes the unnormalized
+    distribution of the in-degrees of the graph
     """
     
     return []
