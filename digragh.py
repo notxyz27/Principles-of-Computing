@@ -29,15 +29,33 @@ def compute_in_degrees(digraph):
     Takes a directed graph digraph and computes the in degrees for
     the nodes in the graph
     """
+    
     in_degree_dic = dict()
-     
-        
-    return []
+    for key in range(digraph):
+        degree = 0
+        for node, edges in digraph.items():
+            if node == key:
+                continue
+            elif key in edges:
+                degree += 1
+        in_degree_dic.update({key: degree})
+    
+    return in_degree_dic
 
-def in_degree_distribution(digragh):
+def in_degree_distribution(digraph):
     """
     Takes a directed graph digraph and computes the unnormalized
     distribution of the in-degrees of the graph
     """
     
-    return []
+    in_degree_distribution = dict()
+    num_nodes = len(digraph)
+    
+    for key in range(0, len(digraph) - 1):
+        count = 0
+        for degree in range(digraph.values()):
+            if degree == key:
+                count += 1
+        in_degree_distribution.update({key: count/num_nodes})
+                   
+    return in_degree_distribution
