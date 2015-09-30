@@ -109,8 +109,9 @@ def strategy(hand, num_die_sides):
     """
     possible_holds = gen_all_holds(hand)
     max_scores = 0
+    length = len(hand)
     for sets in possible_holds:
-        scores = expected_value(sets, num_die_sides, 5 - len(sets))
+        scores = expected_value(sets, num_die_sides, length - len(sets))
         if scores > max_scores:
             held = sets
             max_scores = scores
@@ -137,6 +138,7 @@ def run_example():
 # p = gen_all_holds(hand)
 # print p, len(p)    
     
-hand = (2, 2, 2, 2, 1)
-print score(hand)
-print expected_value((2, 2, 2), 6, 2)
+# hand = (2, 2, 2, 2, 1)
+# print score(hand)
+# print expected_value((2, 2, 2), 6, 2)
+# print strategy((1, ), 6)
