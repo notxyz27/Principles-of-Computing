@@ -49,7 +49,7 @@ def slow_closest_pair(cluster_list):
             if index2 == index1:
                 continue
             else:
-                tem_dist = pair_distance(cluster_list, idx1, idx2)[0]
+                tem_dist = pair_distance(cluster_list, index1, index2)[0]
                 if tem_dist < dist:
                     dist = tem_dist
                     idx1 = index1
@@ -101,23 +101,33 @@ def closest_pair_strip(cluster_list, horiz_center, half_width):
     cluster_list[idx1] and cluster_list[idx2] lie in the strip and have minimum distance dist.       
     """
     small_list = []
+    reference = dict()
     for index in range(len(cluster_list)):
         if math.fabs(cluster_list[index].horiz_center() - horiz_center) < half_width:
-            small_list += cluster_list[index]
-    small_list.sort(key = lambda cluster: cluster.horiz_center())
+            small_list.append(cluster_list[index])
+            reference[index] = cluster_list[index]
+    small_list.sort(key = lambda cluster: cluster.vert_center())
     length = len(small_list)
     idx1 = -1
     idx2 = -1
     dist = float("inf")
     for index1 in range(length-1):
-        upper = min([index1+3, length-1])
-        for index2 in range(index1+1, upper+1):
+        for index2 in range(index1+1, min(index1+3, length-1)+1):
             tem_dist = pair_distance(small_list, index1, index2)[0]
             if  tem_dist < dist:
                 dist = tem_dist
                 idx1 = index1
                 idx2 = index2
-    return (dist, idx1, idx2)
+    for (key, item) in reference.items():
+        if small_list[idx1] == item:
+            idx1 = key
+            break
+    for (key, item) in reference.items():
+        if small_list[idx2] == item:
+            idx2 = key
+            break
+            
+    return (dist, min(idx1, idx2), max(idx1, idx2))
             
  
     
