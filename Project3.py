@@ -73,16 +73,13 @@ def fast_closest_pair(cluster_list):
         (dist, idx1, idx2) = slow_closest_pair(cluster_list)
     else:
         mid_index = length/2
-        list_left = cluster_list[0:mid_index]
-        list_right = cluster_list[mid_index:length]
-        (distl, idx1l, idx2l) = fast_closest_pair(list_left)
-        (distr, idx1r, idx2r) = fast_closest_pair(list_right)
+        (distl, idx1l, idx2l) = fast_closest_pair(cluster_list[0:mid_index])
+        (distr, idx1r, idx2r) = fast_closest_pair(cluster_list[mid_index:length])
         if distl < distr:
             (dist, idx1, idx2) = (distl, idx1l, idx2l)
         else:
-            (dist, idx1, idx2) = (distr, idx1r, idx2r)
-        center_line = (cluster_list[mid_index-1].horiz_center() + cluster_list[mid_index].horiz.center())/2
-        (distc, idx1c, idx2c) = closest_pair_strip(cluster_list, center_line, dist)
+            (dist, idx1, idx2) = (distr, idx1r+mid_index, idx2r+mid_index)
+        (distc, idx1c, idx2c) = closest_pair_strip(cluster_list, (cluster_list[mid_index-1].horiz_center() + cluster_list[mid_index].horiz_center())/2, dist)
         if distc < dist:
             (dist, idx1, idx2) = (distc, idx1c, idx2c) 
     return (dist, idx1, idx2)
@@ -144,8 +141,9 @@ def hierarchical_clustering(cluster_list, num_clusters):
     Output: List of clusters whose length is num_clusters
     """
     while len(cluster_list) > num_clusters:
-        (dist, idx1, idx2) = fast_closest_pair(cluster_list)
-        cluster_list[idx1].nerge_clusters(cluster_list[idx2])
+        cluster_list.sort(key = lambda cluster: cluster.horiz_center())
+        idx1, idx2 = fast_closest_pair(cluster_list)[1], fast_closest_pair(cluster_list)[2]
+        cluster_list[idx1].merge_clusters(cluster_list[idx2])
         cluster_list.pop(idx2)
     return cluster_list
 
@@ -164,27 +162,24 @@ def kmeans_clustering(cluster_list, num_clusters, num_iterations):
     """
     length = len(cluster_list)
     # position initial clusters at the location of clusters with largest populations
-    initial_list = []
-    for index in range(length):
-        if len(initial_list) < num_clusters:
-            initial_list.append(cluster_list[index])
-            initial_list.sort(key = lambda cluster: cluster.total_population())
-        elif cluster_list[index].total_population() > initial_list[0].total_population():
-            initial_list.pop(0)
-            initial_list.append(cluster_list[index])
-            initial_list.sort(key = lambda cluster: cluster.total_population())
+    initial_list = cluster_list[:]
+    initial_list.sort(key = lambda cluster:cluster.total_population())
+    initial_list = initial_list[-num_clusters:]
     for dummy_num in range(num_iterations):
         re_cluster_list = []
         num = 0
         while num < num_clusters:
             re_cluster_list.append(alg_cluster.Cluster(set([]), 0, 0, 0, 0))
+            num += 1
         for index1 in range(length):
             dist = float("inf")
             for index2 in range(num_clusters):
-                if cluster_list[index1].distance(initial_list[index2]) < dist:
+                tem_dist = cluster_list[index1].distance(initial_list[index2])
+                if tem_dist < dist:
                     idx2 = index2
+                    dist = tem_dist
                 else: continue
             re_cluster_list[idx2].merge_clusters(cluster_list[index1])
-                
+        initial_list = re_cluster_list[:]
     return re_cluster_list
 
