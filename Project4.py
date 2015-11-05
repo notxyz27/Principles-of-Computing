@@ -78,6 +78,21 @@ def compute_alignment_matrix(seq_x, seq_y, scoring_matrix, global_flag):
             alignment_matrix[indexr][indexc] = max(alignment_matrix[indexr-1][0] + scoring_matrix[seq_x[indexr-1]]["-"], alignment_matrix[0][indexc-1] + scoring_matrix["-"][seq_y[indexc-1]], alignment_matrix[indexr-1][indexc-1] + scoring_matrix[seq_x[indexr-1]][seq_y[indexc-1]])
     return alignment_matrix
 
+def compute_global_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
+    """
+    Calculate the global alignments
+    
+    Input: seq_x and seq_y are two strings to find alignments. scoring_matrix is a dictionary, 
+    alignment_matrix is a grid
+    
+    Output: two alignments with highest scores in format of tuple (score, align_x, align_y)
+        
+    """
+    len_x = len(seq_x)
+    len_y = len(seq_y)
+    align_x = ""
+    align_y = ""
+    return (score, align_x, align_y)
 # Test
 # Test for build_scoring_matrix
 score = build_scoring_matrix(set(["a", "b", "c"]), 2, 1, 0)
