@@ -88,10 +88,33 @@ def compute_global_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
     Output: two alignments with highest scores in format of tuple (score, align_x, align_y)
         
     """
-    len_x = len(seq_x)
-    len_y = len(seq_y)
+    index_x = len(seq_x)
+    index_y = len(seq_y)
     align_x = ""
     align_y = ""
+    while index_x != 0 and index_y != 0:
+        if alignment_matrix[index_x][index_y] == alignment_matrix[index_x-1][index_y-1] + scoring_matrix[seq_x[index_x-1]][seq_y[index_y-1]]:
+            align_x = seq_x[index_x-1] + align_x
+            align_y = seq_y[index_y-1] + align_y
+            index_x -= 1
+            index_y -= 1
+        elif alignment_matrix[index_x][index_y] == alignment_matrix[index_x-1][index_y] + scoring_matrix[seq_x[index_x-1]]["-"]:
+            align_x = seq_x[index_x-1] + align_x
+            align_y = "-" + align_y
+            index_x -= 1
+        else:
+            align_x = "-" + align_x
+            align_y = seq_y[index_y-1] + align_y
+            index_y -= 1
+    while index_x != 0:
+        align_x = seq_x[index_x-1] + align_x
+        align_y = "-" + align_y
+        index_x -= 1
+    while index_y != 0:
+        align_x = "-" + align_x
+        align_y = seq_y[index_y-1] + align_y
+        index_y -= 1
+        
     return (score, align_x, align_y)
 # Test
 # Test for build_scoring_matrix
