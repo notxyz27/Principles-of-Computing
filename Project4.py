@@ -35,11 +35,12 @@ def build_scoring_matrix(alphabet, diag_score, off_diag_score, dash_score):
     if len(alphabet) == 0:
         return "alphanet is empty"
     
-    alphabet.add("-")
+    characters = alphabet.copy()
+    characters.add("-")
     scoring_matrix = dict()
-    for char1 in alphabet:
+    for char1 in characters:
         scoring_matrix[char1] = dict()
-        for char2 in alphabet:
+        for char2 in characters:
             if char2 == "-" or char1 == "-":
                 scoring_matrix[char1][char2] = dash_score
             elif char2 == char1:
@@ -73,7 +74,7 @@ def compute_alignment_matrix(seq_x, seq_y, scoring_matrix, global_flag):
             alignment_matrix[0][indexc] = 0
     for indexr in range(1, x_length + 1):
         for indexc in range(1, y_length + 1):
-            alignment_matrix[indexr][indexc] = max(alignment_matrix[indexr-1][0] + scoring_matrix[seq_x[indexr-1]]["-"], alignment_matrix[0][indexc-1] + scoring_matrix["-"][seq_y[indexc-1]], alignment_matrix[indexr-1][indexc-1] + scoring_matrix[seq_x[indexr-1]][seq_y[indexc-1]])
+            alignment_matrix[indexr][indexc] = max(alignment_matrix[indexr-1][indexc] + scoring_matrix[seq_x[indexr-1]]["-"], alignment_matrix[indexr][indexc-1] + scoring_matrix["-"][seq_y[indexc-1]], alignment_matrix[indexr-1][indexc-1] + scoring_matrix[seq_x[indexr-1]][seq_y[indexc-1]])
             if (not global_flag) and alignment_matrix[indexr][indexc] < 0:
                 alignment_matrix[indexr][indexc] = 0
     return alignment_matrix
@@ -130,11 +131,14 @@ def compute_local_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
     """
     index_x = len(seq_x)
     index_y = len(seq_y)
+    print index_x, index_y
     align_x = ""
     align_y = ""
     score = 0
-    for row in range(index_x + 1):
-        for col in range(index_y + 1):
+
+    for row in range(len(seq_x)+1):
+        for col in range(len(seq_y)+1):
+            print index_x, index_y, row, col
             if alignment_matrix[row][col] > score:
                 score = alignment_matrix[row][col]
                 index_x = row
@@ -168,6 +172,11 @@ def compute_local_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
         align_y = seq_y[index_y-1] + align_y
         index_y -= 1
     return (score, align_x, align_y)
+
+print compute_alignment_matrix('ATG', 'ACG', {'A': {'A': 6, 'C': 2, '-': -4, 'T': 2, 'G': 2}, 'C': {'A': 2, 'C': 6, '-': -4, 'T': 2, 'G': 2}, '-': {'A': -4, 'C': -4, '-': -4, 'T': -4, 'G': -4}, 'T': {'A': 2, 'C': 2, '-': -4, 'T': 6, 'G': 2}, 'G': {'A': 2, 'C': 2, '-': -4, 'T': 2, 'G': 6}}, True)
+
+print compute_local_alignment('ATG', 'ACG', {'A': {'A': 6, 'C': 2, '-': -4, 'T': 2, 'G': 2}, 'C': {'A': 2, 'C': 6, '-': -4, 'T': 2, 'G': 2}, '-': {'A': -4, 'C': -4, '-': -4, 'T': -4, 'G': -4}, 'T': {'A': 2, 'C': 2, '-': -4, 'T': 6, 'G': 2}, 'G': {'A': 2, 'C': 2, '-': -4, 'T': 2, 'G': 6}}, [[0, 0, 0, 0], [0, 6, 2, 2], [0, 2, 8, 4], [0, 2, 4, 14]])
+"""
 # Test
 # Test for build_scoring_matrix
 score_matrix = build_scoring_matrix(set(["a", "b", "c"]), 2, 1, -1)
@@ -185,3 +194,4 @@ print compute_global_alignment("abcca", "bcaa", score_matrix, align_matrix)
 local_align_matrix = compute_alignment_matrix("abcca", "bcaa", score_matrix, False)
 print local_align_matrix
 print compute_local_alignment("abcca", "bcaa", score_matrix, local_align_matrix)
+"""
