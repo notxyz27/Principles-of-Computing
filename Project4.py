@@ -131,14 +131,12 @@ def compute_local_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
     """
     index_x = len(seq_x)
     index_y = len(seq_y)
-    print index_x, index_y
     align_x = ""
     align_y = ""
     score = 0
 
     for row in range(len(seq_x)+1):
         for col in range(len(seq_y)+1):
-            print index_x, index_y, row, col
             if alignment_matrix[row][col] > score:
                 score = alignment_matrix[row][col]
                 index_x = row
@@ -173,9 +171,9 @@ def compute_local_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
         index_y -= 1
     return (score, align_x, align_y)
 
-print compute_alignment_matrix('ATG', 'ACG', {'A': {'A': 6, 'C': 2, '-': -4, 'T': 2, 'G': 2}, 'C': {'A': 2, 'C': 6, '-': -4, 'T': 2, 'G': 2}, '-': {'A': -4, 'C': -4, '-': -4, 'T': -4, 'G': -4}, 'T': {'A': 2, 'C': 2, '-': -4, 'T': 6, 'G': 2}, 'G': {'A': 2, 'C': 2, '-': -4, 'T': 2, 'G': 6}}, True)
+# print compute_alignment_matrix('ATG', 'ACG', {'A': {'A': 6, 'C': 2, '-': -4, 'T': 2, 'G': 2}, 'C': {'A': 2, 'C': 6, '-': -4, 'T': 2, 'G': 2}, '-': {'A': -4, 'C': -4, '-': -4, 'T': -4, 'G': -4}, 'T': {'A': 2, 'C': 2, '-': -4, 'T': 6, 'G': 2}, 'G': {'A': 2, 'C': 2, '-': -4, 'T': 2, 'G': 6}}, True)
 
-print compute_local_alignment('ATG', 'ACG', {'A': {'A': 6, 'C': 2, '-': -4, 'T': 2, 'G': 2}, 'C': {'A': 2, 'C': 6, '-': -4, 'T': 2, 'G': 2}, '-': {'A': -4, 'C': -4, '-': -4, 'T': -4, 'G': -4}, 'T': {'A': 2, 'C': 2, '-': -4, 'T': 6, 'G': 2}, 'G': {'A': 2, 'C': 2, '-': -4, 'T': 2, 'G': 6}}, [[0, 0, 0, 0], [0, 6, 2, 2], [0, 2, 8, 4], [0, 2, 4, 14]])
+# print compute_local_alignment('ATG', 'ACG', {'A': {'A': 6, 'C': 2, '-': -4, 'T': 2, 'G': 2}, 'C': {'A': 2, 'C': 6, '-': -4, 'T': 2, 'G': 2}, '-': {'A': -4, 'C': -4, '-': -4, 'T': -4, 'G': -4}, 'T': {'A': 2, 'C': 2, '-': -4, 'T': 6, 'G': 2}, 'G': {'A': 2, 'C': 2, '-': -4, 'T': 2, 'G': 6}}, [[0, 0, 0, 0], [0, 6, 2, 2], [0, 2, 8, 4], [0, 2, 4, 14]])
 """
 # Test
 # Test for build_scoring_matrix
