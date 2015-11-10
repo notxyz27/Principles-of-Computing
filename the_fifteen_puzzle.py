@@ -222,17 +222,57 @@ class Puzzle:
         """
         move_string = "ur"
         self.update_puzzle("ur")
-        # When target tile is moved to its solved position already
-        if self.current_position(target_row, 0) == (target_row, 0):
-            tem_moves = ""
-            for dummy_step in range(self.get_width() - 2):
-                tem_moves += "r"
-            self.update_puzzle(tem_moves)
-        # 
-        else:
-            move_string += self.solve_interior_tile(target_row - 1, 1)
-        move_string += "ruldrdlurdluurddlur"
-        self.update_puzzle("ruldrdlurdluurddlur")
+
+        # When target tile is not moved to its solved position after "ur"
+        if self.current_position(target_row, 0) != (target_row, 0):
+            cur_pos = self.current_position(target_row, 0)
+            ver_dis = target_row - 1 - cur_pos[0]
+            if cur_pos[1] > 1:
+                hor_dis = cur_pos[1] - 1
+                # First move 0 to the location of target tile and target tile on the left
+                for dummy_step in range(ver_dis):
+                    move_string += "u" 
+                for dummy_step in range(hor_dis):
+                    move_string += "r"
+                # When current row of target tile is 0 (the first row)
+                if cur_pos[0] == 0:
+                    # Move target tile left till it lies in the same col of its solved location and target tile under 0
+                    move_string += position_tile("d", "l", "u", "r", hor_dis, 0)
+                    # Move target tile down till it lies in its solved location and 0 on its left
+                    move_string += position_tile("l", "d", "r", "u", ver_dis, 1)
+                    move_string += "ld"
+                else:
+                    # Move target tile left till it lies in the same col of its solved location and target tile under 0 
+                    move_string += position_tile("u", "l", "d", "r", hor_dis, 0)
+                    move_string += "u"
+                    move_string += position_tile("l", "d", "r", "u", ver_dis + 1, 1)
+            # When the current location of the target tile is at the same col of 0
+            elif cur_pos[1] == 1:
+                # First move 0 to current location of target tile and target tile under 0
+                for dummy_step in range(ver_dis):
+                    move_string += "u"
+                # Move target tile down till it lies in its solved location and 0 on its left
+                move_string += position_tile("l", "d", "r", "u", ver_dis, 1)
+                move_string += "ld"
+            # When the current col of target tile is less than that of solved location
+            elif cur_pos[0] == target_row - 1:
+                move_string += "l"
+            else:
+                hor_dis = 1 - cur_pos[1]
+                # First move 0 to the current location of target tile and target tile under 0
+                move_string += "l" 
+                for dummy_step in range(ver_dis):
+                    move_string += "u"
+                # Move target tile down till it lies at the same row of solved location and 0 on its top
+                move_string += position_tile("r", "d", "l", "u", ver_dis, 1)
+                # Move 0 to the location of target tile and target tile on the right of 0
+                move_string += "rdl"
+            self.update_puzzle(move_string[2:])
+            move_string += "ruldrdlurdluurddlur"
+            self.update_puzzle("ruldrdlurdluurddlur")
+        for dummy_step in range(self.get_width() - 2):
+            move_string += "r"
+        self.update_puzzle(move_string[-self.get_width()+2:])
         return move_string
 
     #############################################################
@@ -244,8 +284,18 @@ class Puzzle:
         at the given column (col > 1)
         Returns a boolean
         """
-        # replace with your code
-        return False
+        if self._grid[0][target_col] != 0 or self._grid[1][target_col] != self.get_width() + target_col:
+            return False
+        index = target_col + 1
+        while index < self.get_width():
+            if self._grid[0][index] != index or self._grid[1][index] != self.get_width() + index:
+                return False
+            index += 1
+        for row in range(2, self.get_height()):
+            for col in range(self.get_width()):
+                if self._grid[row][col] != row * self.get_width() + col:
+                    return False
+        return True
 
     def row1_invariant(self, target_col):
         """
@@ -253,8 +303,18 @@ class Puzzle:
         at the given column (col > 1)
         Returns a boolean
         """
-        # replace with your code
-        return False
+        if self._grid[1][target_col] != 0:
+            return False
+        index = target_col + 1
+        while index < self.get_width():
+            if self._grid[0][index] != index or self._grid[1][index] != self.get_width() + index:
+                return False
+            index += 1
+        for row in range(2, self.get_height()):
+            for col in range(self.get_width()):
+                if self._grid[row][col] != row * self.get_width() + col:
+                    return False
+        return True
 
     def solve_row0_tile(self, target_col):
         """
@@ -269,8 +329,19 @@ class Puzzle:
         Solve the tile in row one at the specified column
         Updates puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        move_string = ""
+        cur_pos = self.current_position(1, target_col)
+        hor_dis = target_col - cur_pos[1]
+        for dummy_step in range(hor_dis):
+            move_string += "l"
+        if cur_pos[0] == 1:
+            move_string += position_tile("u", "r", "d", "l", hor_dis, 1)
+        elif cur_pos[1] == target_col:
+            move_string += "uld"
+        else:
+            move_string += "urdl"
+            move_string += position_tile("u", "r", "d", "l", hor_dis, 1)
+        return move_string
 
     ###########################################################
     # Phase 3 methods
@@ -323,6 +394,9 @@ print puzzle._grid
 puzzle.solve_interior_tile(2, 1)
 print puzzle.lower_row_invariant(2, 0)
 print puzzle._grid
+puzzle.solve_col0_tile(2)
+# print puzzle.lower_row_invariant(1, 3)
+print puzzle._grid
 
 puzzle1 = Puzzle(4, 4, [[5, 9, 2, 3], [14, 6, 15, 7], [12, 1, 13, 8], [4, 11, 10, 0]])
 print puzzle1.lower_row_invariant(3, 3)
@@ -334,4 +408,7 @@ puzzle2 = Puzzle(4, 4, [[4, 13, 1, 3], [5, 10, 2, 7], [8, 12, 6, 11], [9, 0, 14,
 print puzzle2.lower_row_invariant(3, 1)
 puzzle2.solve_interior_tile(3, 1)
 print puzzle2.lower_row_invariant(3, 0)
+print puzzle2._grid
+puzzle2.solve_col0_tile(3)
+print puzzle2.lower_row_invariant(2, 3)
 print puzzle2._grid
