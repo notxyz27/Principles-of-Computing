@@ -2,6 +2,11 @@
 Loyd's Fifteen puzzle - solver and visualizer
 Note that solved configuration has the blank (zero) tile in upper left
 Use the arrows key to swap this tile with its neighbors
+
+Strategy: given a n * m grid, first solve bottom n-2 rows using solve_interior_tile
+for rightmost m-1 columns and solve_col0_tile for leftmost column. Then solve righ-
+tmost m-2 columns using solve_row0_tile and solve_row1_tile depending on the row b-
+eing solved. Finally solve the 2*2 grid at the leftupper corner.  
 """
 
 # import poc_fifteen_gui
@@ -181,12 +186,13 @@ class Puzzle:
             if cur_pos[0] == 0:
                 # Move target tile left till it lies in the same col of its solved location and target tile under 0
                 move_string += position_tile("d", "l", "u", "r", hor_dis, 0)
+                move_string += position_tile("l", "d", "r", "u", ver_dis, 1)
             else:
                 # Move target tile left till it lies in the same col of its solved location and target tile under 0 
                 move_string += position_tile("u", "l", "d", "r", hor_dis, 0)
                 move_string += "u"
-            # Move target tile down till it lies in its solved location and 0 on its left
-            move_string += position_tile("l", "d", "r", "u", ver_dis + 1, 1)
+                # Move target tile down till it lies in its solved location and 0 on its left
+                move_string += position_tile("l", "d", "r", "u", ver_dis + 1, 1)
             move_string += "ld"
         # When the current location of the target tile is at the same col of 0
         elif cur_pos[1] == target_col:
@@ -321,8 +327,30 @@ class Puzzle:
         Solve the tile in row zero at the specified column
         Updates puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        # First move 0 one left tile and  one down tile
+        move_string = "ld"
+        self.update_puzzle(move_string)
+        cur_pos = self.current_position(0, target_col)
+        # When target tile has been moved to its solved location
+        if cur_pos == (0, target_col):
+            return move_string
+        # When target tile is right on the top of 0 move tiles to a particular situation that can be
+        # solved using "urdlurrdluldrruld"
+        elif cur_pos[1] == target_col - 1:
+            move_string += "uld"
+            move_string += "urdlurrdluldrruld"
+        # When target tile lies in other locations move tiles to a particular situation that can be
+        # solved using "urdlurrdluldrruld"
+        else:
+            hor_dis = target_col - cur_pos[1]
+            for dummy_step in range(hor_dis - 1):
+                move_string += "l"
+            if cur_pos[0] == 0:
+                move_string += "urdl"
+            move_string += position_tile("u", "r", "d", "l", hor_dis - 1, 1)
+            move_string += "urdlurrdluldrruld"
+        self.update_puzzle(move_string[2:])        
+        return move_string
 
     def solve_row1_tile(self, target_col):
         """
@@ -332,15 +360,22 @@ class Puzzle:
         move_string = ""
         cur_pos = self.current_position(1, target_col)
         hor_dis = target_col - cur_pos[1]
+        # Move 0 left till it lies atthe same col of target tile
         for dummy_step in range(hor_dis):
             move_string += "l"
+        # When target tile is at row1
         if cur_pos[0] == 1:
             move_string += position_tile("u", "r", "d", "l", hor_dis, 1)
+            move_string += "ur"
+        # When target tile is on the top of 0
         elif cur_pos[1] == target_col:
-            move_string += "uld"
+            move_string += "u"
+        # When target tile lies in other locations
         else:
             move_string += "urdl"
             move_string += position_tile("u", "r", "d", "l", hor_dis, 1)
+            move_string += "ur"
+        self.update_puzzle(move_string)
         return move_string
 
     ###########################################################
@@ -350,17 +385,56 @@ class Puzzle:
         """
         Solve the upper left 2x2 part of the puzzle
         Updates the puzzle and returns a move string
+        
+        Only three situation exist for a solvable puzzle as the locations of tiles 
+        in a solvable 2 by 2 grid have to follow a particular counterclockwise or
+        clockwise sequence 
         """
-        # replace with your code
-        return ""
+        move_string = ""
+        cur_pos = self.current_position(1, 1)
+        if cur_pos == (1, 0):
+            move_string += "lu"
+        elif cur_pos == (0, 0):
+            move_string += "lurdlu"
+        else:
+            move_string += "ul"
+        self.update_puzzle(move_string)
+        return move_string
 
     def solve_puzzle(self):
         """
         Generate a solution string for a puzzle
         Updates the puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        move_string = ""
+        height = self.get_height()
+        width = self.get_width()
+        
+        # Find the current location of zero and then move it to the left bottom corner of the grid
+        zero_pos = self.current_position(0, 0)
+        for dummy_step in range(height - 1 - zero_pos[0]):
+            move_string += "d"
+        for dummy_step in range(width - 1 - zero_pos[1]):
+            move_string += "r"
+        self.update_puzzle(move_string)
+        assert self.current_position(0, 0) == (height-1, width-1), "not at the right-bottom corner"
+        
+        # From the left-bottom corner of the grid to solve the problem
+        for row in range(height - 1, 1, -1):
+            for col in range(width - 1, 0, -1):
+                assert self.lower_row_invariant(row, col), "lower_row_invariant violated at " + str((row, col))
+                move_string += self.solve_interior_tile(row, col)
+            assert self.lower_row_invariant(row, 0), "lower_row_invariant violated at " + str((row, 0))
+            move_string += self.solve_col0_tile(row)
+        for col in range(width - 1, 1, -1):
+            assert self.row1_invariant(col), "row1_invariant violated at " + str((1, col))
+            move_string += self.solve_row1_tile(col)
+            print self._grid
+            assert self.row0_invariant(col), "row0_invariant violated at " + str((0, col))
+            move_string += self.solve_row0_tile(col)
+        assert self.row1_invariant(1), "row1_invariant violated at " + str((1, 1))
+        move_string += self.solve_2x2()
+        return move_string
     
 def position_tile(dir1, dir2, dir3, dir4, ver_hor, res):
     """
@@ -412,3 +486,11 @@ print puzzle2._grid
 puzzle2.solve_col0_tile(3)
 print puzzle2.lower_row_invariant(2, 3)
 print puzzle2._grid
+
+# Test3 for solve_puzzle
+obj = Puzzle(3, 3, [[0, 1, 2], [3, 4, 5], [6, 7, 8]])
+obj.solve_puzzle()
+print obj._grid
+obj1 = Puzzle(3, 6, [[16, 7, 13, 17, 5, 9], [3, 0, 14, 10, 12, 6], [4, 15, 2, 11, 8, 1]])
+obj1.solve_puzzle()
+print obj1._grid
