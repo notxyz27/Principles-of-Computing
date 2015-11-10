@@ -160,103 +160,59 @@ class Puzzle:
         """
         move_string = ""
         cur_pos = self.current_position(target_row, target_col)
+        ver_dis = target_row - cur_pos[0]
         if cur_pos[0] == target_row:
             hor_dis = target_col - cur_pos[1]
-            # First move 0 to the location of target tile 
-            for step in range(hor_dis):
-                self.update_puzzle("l")
+            # First move 0 to the location of target tile and target tile on the right of 0
+            for dummy_step in range(hor_dis):
                 move_string += "l"
-            num = 0
             # Then implement cyclic moves till the tile is moved to solved location and 0 lies left to the location
-            while num < hor_dis - 1:
-                self.update_puzzle("u")
-                move_string += "u"
-                for step in range(hor_dis - num):
-                    self.update_puzzle("r")
-                    move_string += "r"
-                self.update_puzzle("d")
-                move_string += "d"
-                for step in range(hor_dis - num - 1):
-                    self.update_puzzle("l")
-                    move_string += "l"
-                num += 1
-            self.update_puzzle("l")
-            move_string += "l"
-        else:
-            self.update_puzzle("u")
+            move_string += position_tile("u", "r", "d", "l", hor_dis, 1)
+        # When current col of target tile is larger than its solved location 
+        elif cur_pos[1] > target_col:
             move_string += "u"
-            # When current col of target tile is larger than its solved location 
-            if cur_pos[1] > target_col:
-                hor_dis = cur_pos[1] - target_col
-                ver_dis = target_row - cur_pos[0] - 1
-                # First move 0 to the location of target tile
-                for step in range(ver_dis):
-                    self.update_puzzle("u")
-                    move_string += "u" 
-                for step in range(hor_dis):
-                    self.update_puzzle("r")
-                    move_string += "r"
-                # When current row of target tile is 0 (the first row)
-                if cur_pos[0] == 0:
-                    num = 0
-                    # Move target tile left till it lies in the same col of its solved location
-                    while num < hor_dis:
-                        self.update_puzzle("d")
-                        move_string += "d"
-                        for step in range(hor_dis - num):
-                            self.update_puzzle("l")
-                            move_string += "l"
-                        self.update_puzzle("u")
-                        move_string += "u"
-                        for step in range(hor_dis - num - 1):
-                            self.update_puzzle("r")
-                        num += 1
-                    num = 0
-                    # Move target tile down till it lies in its solved location and 0 on its left
-                    while num < ver_dis + 1:
-                        self.update_puzzle("l")
-                        move_string += "l"
-                        for step in range(ver_dis + 1 - num):
-                            self.update_puzzle("d")
-                            move_string += "d"
-                        self.update_puzzle("r")
-                        move_string += "r"
-                        for step in range(ver_dis - num):
-                            self.update_puzzle("u")
-                            move_string += "u"  
-                        num += 1
-                else:
-                    num = 0
-                    # Move target tile left till it lies in the same col of its solved location
-                    while num < hor_dis:
-                        self.update_puzzle("u")
-                        move_string += "u"
-                        for step in range(hor_dis - num):
-                            self.update_puzzle("l")
-                            move_string += "l"
-                        self.update_puzzle("d")
-                        move_string += "d"
-                        for step in range(hor_dis - num - 1):
-                            self.update_puzzle("r")
-                            move_string += "r"
-                        num += 1
-                    self.update_puzzle("u")
-                    move_string += "u"
-                    # Move target tile down till it lies in its solved location and 0 on its left
-                    num = 0
-                    while num < ver_dis + 1:
-                        self.update_puzzle("l")
-                        move_string += "l"
-                        for step in range(ver_dis + 1 - num):
-                            self.update_puzzle("d")
-                            move_string += "d"
-                        self.update_puzzle("r")
-                        move_string += "r"
-                        for step in range(ver_dis - num):
-                            self.update_puzzle("u")
-                            move_string += "u"
-                        num += 1
-                             
+            hor_dis = cur_pos[1] - target_col
+            # First move 0 to the location of target tile and target tile on the left
+            for dummy_step in range(ver_dis - 1):
+                move_string += "u" 
+            for dummy_step in range(hor_dis):
+                move_string += "r"
+            # When current row of target tile is 0 (the first row)
+            if cur_pos[0] == 0:
+                # Move target tile left till it lies in the same col of its solved location and target tile under 0
+                move_string += position_tile("d", "l", "u", "r", hor_dis, 0)
+            else:
+                # Move target tile left till it lies in the same col of its solved location and target tile under 0 
+                move_string += position_tile("u", "l", "d", "r", hor_dis, 0)
+                move_string += "u"
+            # Move target tile down till it lies in its solved location and 0 on its left
+            move_string += position_tile("l", "d", "r", "u", ver_dis + 1, 1)
+            move_string += "ld"
+        # When the current location of the target tile is at the same col of 0
+        elif cur_pos[1] == target_col:
+            move_string += "u"
+            # First move 0 to current location of target tile and target tile under 0
+            for dummy_step in range(ver_dis - 1):
+                move_string += "u"
+            # Move target tile down till it lies in its solved location and 0 on its left
+            move_string += position_tile("l", "d", "r", "u", ver_dis, 1)
+            move_string += "ld"
+        # When the current col of target tile is less than that of solved location
+        else:
+            move_string += "u"
+            hor_dis = target_col - cur_pos[1]
+            # First move 0 to the current location of target tile and target tile under 0
+            for dummy_step in range(hor_dis):
+                move_string += "l" 
+            for dummy_step in range(ver_dis - 1):
+                move_string += "u"
+            # Move target tile down till it lies at the same row of solved location and 0 on its top
+            move_string += position_tile("r", "d", "l", "u", ver_dis, 1)
+            # Move 0 to the location of target tile and target tile on the right of 0
+            move_string += "rdl"
+            # Move target tile right till it lies at the target location and 0 on its left
+            move_string += position_tile("u", "r", "d", "l", hor_dis, 1)
+        self.update_puzzle(move_string)
         return move_string
 
     def solve_col0_tile(self, target_row):
@@ -264,8 +220,20 @@ class Puzzle:
         Solve tile in column zero on specified row (> 1)
         Updates puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        move_string = "ur"
+        self.update_puzzle("ur")
+        # When target tile is moved to its solved position already
+        if self.current_position(target_row, 0) == (target_row, 0):
+            tem_moves = ""
+            for dummy_step in range(self.get_width() - 2):
+                tem_moves += "r"
+            self.update_puzzle(tem_moves)
+        # 
+        else:
+            move_string += self.solve_interior_tile(target_row - 1, 1)
+        move_string += "ruldrdlurdluurddlur"
+        self.update_puzzle("ruldrdlurdluurddlur")
+        return move_string
 
     #############################################################
     # Phase two methods
@@ -322,10 +290,48 @@ class Puzzle:
         """
         # replace with your code
         return ""
+    
+def position_tile(dir1, dir2, dir3, dir4, ver_hor, res):
+    """
+    Helper function to implement cyclic movements
+    
+    """
+    moves = ""
+    num = 0
+    while num < ver_hor - res:
+        moves += dir1
+        for dummy_step in range(ver_hor - num):
+            moves += dir2
+        moves += dir3
+        for dummy_step in range(ver_hor - num - 1):
+            moves += dir4
+        num += 1
+    return moves
 
 # Start interactive simulation
 # poc_fifteen_gui.FifteenGUI(Puzzle(4, 4))
-# Test cases
+####### Test cases #######
+
 # Test1 for lower_row_invariant
 puzzle = Puzzle(4, 4, [[4, 2, 3, 7], [8, 5, 6, 10], [9, 1, 0, 11], [12, 13, 14, 15]])
 print puzzle.lower_row_invariant(2, 2)
+
+# Test2 for solve_interior_tile
+puzzle.solve_interior_tile(2, 2)
+print puzzle.lower_row_invariant(2, 1)
+print puzzle._grid
+puzzle.solve_interior_tile(2, 1)
+print puzzle.lower_row_invariant(2, 0)
+print puzzle._grid
+
+puzzle1 = Puzzle(4, 4, [[5, 9, 2, 3], [14, 6, 15, 7], [12, 1, 13, 8], [4, 11, 10, 0]])
+print puzzle1.lower_row_invariant(3, 3)
+puzzle1.solve_interior_tile(3, 3)
+print puzzle1.lower_row_invariant(3, 2)
+print puzzle1._grid
+
+puzzle2 = Puzzle(4, 4, [[4, 13, 1, 3], [5, 10, 2, 7], [8, 12, 6, 11], [9, 0, 14, 15]])
+print puzzle2.lower_row_invariant(3, 1)
+puzzle2.solve_interior_tile(3, 1)
+print puzzle2.lower_row_invariant(3, 0)
+print puzzle2._grid
